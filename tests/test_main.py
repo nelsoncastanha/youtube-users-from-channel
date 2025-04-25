@@ -1,5 +1,10 @@
 import pytest
-from src.main import get_channel_id_by_name, get_video_ids, get_comment_authors
+from src.main import (
+    get_channel_id_by_name,
+    get_video_ids,
+    get_comment_authors,
+    fetch_comment_authors_by_channel_name
+)
 
 
 def test_get_channel_id_by_name_success(mocker):
@@ -55,3 +60,61 @@ def test_get_comment_authors(mocker):
 
     result = get_comment_authors(mock_youtube, "video123")
     assert result == {("User A", "channelA")}
+
+
+def test_fetch_comment_authors_by_channel_name(mocker):
+    mock_youtube = mocker.Mock()
+
+    # Mock build() para retornar o mock_youtube
+    mocker.patch("src.main.build", return_value=mock_youtube)
+
+    # Mock para get_channel_id_by_name
+    mock_youtube.search().list().execute.return_value = {
+        "items": [{"snippet": {"channelId": "123"}}]
+    }
+
+    # Mock para get_video_ids
+    mock_youtube.channels().list().execute.return_value = {
+        "items": [{"contentDetails": {"relatedPlaylists": {"uploads": "playlist123"}}}]
+    }
+    mock_youtube.playlistItems().list().execute.return_value = {
+        "items": [
+            {"contentDetails": {"videoId": "vid1"}},
+            {"contentDetails": {"videoId": "vid2"}},
+        ]
+    }
+
+    # Mock para get_comment_authors
+    mock_youtube.commentThreads().list().execute.side_effect = [
+        {
+            "items": [
+                {
+                    "snippet": {
+                        "topLevelComment": {
+                            "snippet": {
+                                "authorDisplayName": "Alice",
+                                "authorChannelId": {"value": "chanA"},
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "items": [
+                {
+                    "snippet": {
+                        "topLevelComment": {
+                            "snippet": {
+                                "authorDisplayName": "Bob",
+                                "authorChannelId": {"value": "chanB"},
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+    ]
+
+    result = fetch_comment_authors_by_channel_name("Canal Exemplo")
+    assert result == {("Alice", "chanA"), ("Bob", "chanB")}
