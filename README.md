@@ -62,7 +62,7 @@ Exemplo:
 python src/main.py "Canal Nostalgia"
 ```
 
-### Como rodar os testes unitários
+### ✅ Como rodar os testes unitários
 
 Certifique-se de que o ambiente virtual esteja ativado.
 Execute:
