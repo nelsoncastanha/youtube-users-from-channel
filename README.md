@@ -68,7 +68,7 @@ Certifique-se de que o ambiente virtual esteja ativado.
 Execute:
 
 ```bash
-pytest
+pytest -v
 ```
 
 Isso irá rodar todos os testes localizados no diretório 'tests/'.
